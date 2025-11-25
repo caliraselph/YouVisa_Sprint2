@@ -116,9 +116,7 @@ Accede: http://127.0.0.1:8000/docs
 
 ## 🕵️‍♂️ Panel Agente (Frontend React)
 
-- Consulta `/cases`, `/cases/{id}` desde React (opcional)
-- Si no implementado, muestra pruebas en Swagger UI y capturas
-
+- Consulta `/cases`, `/cases/{id}` 
 ---
 
 ## 📝 Ejemplo de Evidencias
@@ -128,7 +126,25 @@ Accede: http://127.0.0.1:8000/docs
 - Diagrama de arquitectura
 - Consulta Firestore
 
-Incluye tus imágenes en `/docs`.
+Testes FastAPI:
+•	GET /health
+ 
+ 
+
+•	POST /upload
+  
+ 
+ 
+•	GET /cases
+ 
+ 
+•	GET /cases/{case_id}
+ 
+ 
+
+ 
+
+
 
 ---
 
