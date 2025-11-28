@@ -6,149 +6,44 @@
 
 <br>
 
-# Nome do projeto
-YOUVISA – Plataforma Inteligente de Atendimento Multicanal
+# 🤖 YOUVISA – Plataforma Inteligente de Atendimento Multicanal
+## 🚀 Entrega: Sprint 2
 
-## Nome do grupo
-Grupo 22
-
-## 👨‍🎓 Integrantes: 
-- <a href="https://www.linkedin.com/in/">Ana Beatriz Duarte Domingues</a>
-- <a href="https://www.linkedin.com/in/jrsilva051/">Junior Rodrigues da Silva</a>
-- <a href="https://www.linkedin.com/in/">Carlos Emilio Castillo Estrada</a>
-
-# 🤖 **YOUVISA – Plataforma Inteligente de Atendimento Multicanal**
-# 🚀 YOUVISA – Sprint 2
-
-> Automatización inteligente para servicios consulares
+> **Descrição:** Solução de automação inteligente para serviços consulares, integrando classificação via NLP, validação visual e RPA.
 
 ---
 
-## 📌 Descripción del Proyecto
+## 👨‍🎓 Integrantes: Grupo 22
 
-YOUVISA optimiza servicios consulares con IA, RPA, NLP y visión computacional. Esta sprint integra backend, clasificación de documentos, validación visual, automatización de tareas, Firestore y un panel opcional para agentes.
+| Nome | LinkedIn | Papel no Projeto |
+| :--- | :--- | :--- |
+| **Ana Beatriz Duarte Domingues** | [Perfil](https://www.linkedin.com/in/) | Automação (RPA) & Documentação |
+| **Junior Rodrigues da Silva** | [Perfil](https://www.linkedin.com/in/jrsilva051/) | Backend API & Chatbot Intelligence |
+| **Carlos Emilio Castillo Estrada** | [Perfil](https://www.linkedin.com/in/) | Banco de Dados & Infraestrutura |
+
+---
+## 📦 Links Rápidos da Entrega
+Acesse rapidamente os itens entregáveis:
+
+*  **Demonstração Funcional (Vídeo):** [Assistir no YouTube](https://youtu.be/V565bE4z80I?si=4o52oVuZAJQVWOTS)
+*  **Relatório Técnico (PDF):** [Acessar Relatório Completo](docs/relatorio_tecnico.md)
+*  **Código Fonte:** Disponível nas pastas `backend/app` e `frontend`.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 📌 Visão Geral do Projeto
 
-| Módulo        | Tecnología           | Descripción                         |
-|---------------|---------------------|-------------------------------------|
-| Backend       | FastAPI + Python    | API REST y pipeline automatizado    |
-| Persistencia  | Firestore           | Base de datos de documentos/casos   |
-| IA / NLP      | Python (simulado)   | Clasificación de tipo documentario  |
-| Visión        | Simulación/OpenCV   | Validación por extensión/nombre     |
-| RPA / Email   | SMTP + Python       | Email automático al usuario         |
-| Frontend      | React + Vite        | Panel agente (opcional)             |
-| Control       | Git & GitHub        | Versionamiento y colaboración       |
+A **YOUVISA** otimiza serviços consulares utilizando tecnologias de Inteligência Artificial, RPA, NLP e Visão Computacional. 
+
+Nesta **Sprint 2**, entregamos o backend funcional que realiza:
+1.  **Classificação Inteligente:** Identifica se o arquivo é passaporte, RG ou formulário.
+2.  **Validação Visual:** Verifica integridade e formato.
+3.  **RPA Ativo:** Envia e-mail automático de confirmação ou erro para o usuário.
+4.  **Rastreabilidade:** Grava cada passo no Google Firestore.
 
 ---
 
-## 📂 Estructura del Repositorio
-
-src/
-│
-├─ backend/
-│ ├─ app/ # Lógica FastAPI: pipeline modular
-│ ├─ credentials/ # Credencial Firebase (no subir pública)
-│ ├─ uploaded/ # Documentos recibidos
-│ ├─ venv/ # Entorno virtual (ignorado por .gitignore)
-│ ├─ requirements.txt
-├─ frontend/ # Panel (React - opcional)
-├─ docs/ # Capturas, diagrama, informe
-
-
----
-
-## ⚡ Instalación y Ejecución
-
-1. Clona el repo y entra al backend
-git clone https://github.com/caliraselph/YouVisa_Sprint2.git
-cd YouVisa_Sprint2/src/backend
-
-2. Activa entorno virtual y dependencias
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-
-3. Agrega serviceAccount.json a /credentials
-4. Ejecuta el servidor FastAPI
-python -m uvicorn app.main:app --reload
-
-Accede: http://127.0.0.1:8000/docs
-
----
-
-## 📲 Pruebas de la plataforma
-
-### Endpoints principales
-
-| URL              | Método | Descripción                       |
-|------------------|--------|-----------------------------------|
-| `/health`        | GET    | Estado del backend                |
-| `/upload`        | POST   | Sube y clasifica documento        |
-| `/cases`         | GET    | Lista casos/procesos              |
-| `/cases/{id}`    | GET    | Consulta caso específico          |
-
-### Ejemplo de uso
-
-1. Sube archivo documentario en `/upload`
-2. Pipeline:
-   - Clasificación NLP (simulada)
-   - Validación visual (extensión/nombre; listo para OpenCV)
-   - Registro automático en Firestore
-   - Envío de email por SMTP
-3. Consulta estado desde `/cases` y Firestore
-
----
-
-## ✉️ Email Automático (RPA) – Configuración SMTP
-
-1. En Gmail, activa verificación en dos pasos
-2. Genera una App password ([Guía Google](https://support.google.com/accounts/answer/185833?hl=es))
-3. Configura en `app/rpa/email.py`:
-    ```
-    sender = "tucorreo@gmail.com"
-    app_password = "XXXXXXXXXXXXXXXX"
-    ```
-
----
-
-## 🕵️‍♂️ Panel Agente (Frontend React)
-
-- Consulta `/cases`, `/cases/{id}` 
----
-
-## 📝 Ejemplo de Evidencias
-
-- Subida y clasificación en Swagger UI
-- Email recibido
-- Diagrama de arquitectura
-- Consulta Firestore
-
-Testes FastAPI:
-•	GET /health
- 
- 
-
-•	POST /upload
-  
- 
- 
-•	GET /cases
- 
- 
-•	GET /cases/{case_id}
- 
- 
-
- 
-
-
-
----
-
-## 🔗 Diagrama de Arquitectura
+## 🔗 Diagrama de Arquitetura
 Usuario/Chatbot
       ↓
 Backend FastAPI
@@ -161,18 +56,100 @@ Panel agente / Swagger UI / Frontend
 
 ---
 
-## 🚀 ** Plano de Desenvolvimento (Sprint 2)**
+## 📸 Evidências de Validação (Screenshots)
 
-| Etapa | Fase | Principais Tarefas | Responsável |
-| :-- | :-- | :-- | :-- |
-| 1 | Backend API | Desenvolver os endpoints da API com FastAPI, seguindo o contrato de dados. | Junior Rodrigues |
-| 2 | Banco de Dados | Modelar e implementar a lógica de acesso ao Google Firestore. | Carlos Emilio |
-| 3 | Lógica do Chatbot | Criar as cadeias (chains) e prompts no LangChain para o Gemini Flash. | Junior Rodrigues |
-| 4 | Automação (RPA) | Implementar as funções de RPA e conectá-las ao backend. | Ana Beatriz |
-| 5 | Infra & Deploy | Criar o Dockerfile da aplicação e configurar o pipeline de deploy no Google Cloud Run. | Carlos Emilio |
-| 6 | Painel & Documentação | Criar o painel do agente (Streamlit) lendo do Firestore e manter o README.md. | Ana Beatriz |
+Abaixo apresentamos as evidências visuais dos testes realizados no protótipo funcional.
+
+### 1. API e Documentação (Swagger UI)
+*Interface onde os endpoints são testados. É possível ver as rotas `/upload` (para envio de arquivos) e `/cases` (para consulta).*
+![Swagger UI](docs/evidencia_swagger.jpg)
+
+### 2. Persistência de Dados (Google Firestore)
+*Banco de dados em nuvem registrando o caso com ID único, e-mail do usuário e status "aberto" após o upload.*
+![Firestore Database](docs/evidencia_firestore.jpg)
+
+### 3. Painel do Agente (Frontend React)
+*Interface visual desenvolvida em React + Vite, consumindo a API para listar os casos processados.*
+![Frontend React](docs/evidencia_frontend.jpg)
+
+### 4. Estrutura e Ambiente de Desenvolvimento
+*Visão do ambiente (VS Code) demonstrando a organização modular das pastas (`backend`, `frontend`, `pipeline`) e o servidor rodando.*
+<p align="center">
+  <img src="docs/estrutura_projeto.jpg" width="48%" alt="Estrutura de Pastas">
+  <img src="docs/ambiente_dev.jpg" width="48%" alt="Ambiente VS Code">
+</p>
 
 ---
+
+## 🛠️ Tecnologias Utilizadas
+
+| Módulo | Tecnologia | Descrição |
+| :--- | :--- | :--- |
+| **Backend** | FastAPI + Python | API REST e orquestração do pipeline de automação. |
+| **Banco de Dados** | Google Firestore | Armazenamento NoSQL de documentos e logs de casos. |
+| **IA / NLP** | Python (Logic/Regex) | Classificação automática de tipos documentais. |
+| **Visão Comp.** | Python / OpenCV | Validação estrutural de arquivos (extensão/formato). |
+| **RPA / Email** | SMTP + Python | Envio automático de confirmações para o usuário. |
+| **Frontend** | React + Vite | Painel do agente para visualização de casos. |
+| **Controle** | Git & GitHub | Versionamento e colaboração. |
+
+---
+
+## 📂 Estrutura do Repositório
+
+```bash
+src/
+│
+├─ backend/
+│ ├─ app/             # Aplicação Principal
+│ │  ├─ pipeline/     # Módulos de IA (NLP e Visão)
+│ │  ├─ rpa/          # Scripts de automação de e-mail
+│ │  └─ db/           # Conexão com Firestore
+│ ├─ credentials/     # Credenciais (GitIgnored)
+│ └─ requirements.txt # Dependências Python
+│
+├─ frontend/          # Interface React (Painel do Agente)
+├─ assets/            # Evidências (Imagens)
+├─ Relatório Técnico (PDF)/
+└─ Link vídeo de demonstração do projeto/ 
+
+```
+
+## ⚡ Guia de Execução Rápida
+
+### 1. Configuração do Backend (API)
+```bash
+# 1. Clone o repositório
+git clone [https://github.com/caliraselph/YouVisa_Sprint2.git](https://github.com/caliraselph/YouVisa_Sprint2.git)
+cd YouVisa_Sprint2/src/backend
+
+# 2. Crie e ative o ambiente virtual
+python -m venv venv
+# Windows: .\venv\Scripts\Activate.ps1
+# Mac/Linux: source venv/bin/activate
+
+# 3. Instale as dependências
+pip install -r requirements.txt
+
+# 4. Execute o servidor
+uvicorn app.main:app --reload
+```
+O backend estará rodando em: `http://127.0.0.1:8000/docs`
+
+### 2. Configuração do Frontend
+```bash
+cd ../frontend
+npm install
+npm run dev
+```
+
+### 3. Configurações Necessárias (.env)
+Para o funcionamento completo (E-mail e Banco), certifique-se de configurar:
+- Arquivo serviceAccount.json na pasta /credentials (Google Firestore).
+- Variáveis de ambiente ou arquivo de config para o SMTP (Gmail App Password).
+
+---
+
 ## 🧾 ** Histórico de Versões**
 
 ---
