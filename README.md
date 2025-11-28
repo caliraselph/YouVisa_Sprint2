@@ -180,4 +180,3 @@ Panel agente / Swagger UI / Frontend
 | :-------- | :--------- | :----------------------------------------------- |
 | **0.2.0** | 04/11/2025 | Refatoração da arquitetura para Google Cloud: Google Cloud Run, Google Firestore, FastAPI e LangChain com Gemini Flash. |
 | **0.1.0** | 09/10/2024 | Criação do documento e definição da arquitetura. |
-
