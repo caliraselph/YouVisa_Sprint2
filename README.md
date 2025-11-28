@@ -62,21 +62,21 @@ Abaixo apresentamos as evidências visuais dos testes realizados no protótipo f
 
 ### 1. API e Documentação (Swagger UI)
 *Interface onde os endpoints são testados. É possível ver as rotas `/upload` (para envio de arquivos) e `/cases` (para consulta).*
-![Swagger UI](images/evidencia_swagger.jpg)
+![Swagger UI](images/evidencia_swagger.jpeg)
 
 ### 2. Persistência de Dados (Google Firestore)
 *Banco de dados em nuvem registrando o caso com ID único, e-mail do usuário e status "aberto" após o upload.*
-![Firestore Database](images/evidencia_firestore.jpg)
+![Firestore Database](images/evidencia_firestore.jpeg)
 
 ### 3. Painel do Agente (Frontend React)
 *Interface visual desenvolvida em React + Vite, consumindo a API para listar os casos processados.*
-![Frontend React](images/evidencia_frontend.jpg)
+![Frontend React](images/evidencia_frontend.jpeg)
 
 ### 4. Estrutura e Ambiente de Desenvolvimento
 *Visão do ambiente (VS Code) demonstrando a organização modular das pastas (`backend`, `frontend`, `pipeline`) e o servidor rodando.*
 <p align="center">
-  <img src="images/estrutura_projeto.jpg" width="48%" alt="Estrutura de Pastas">
-  <img src="images/ambiente_dev.jpg" width="48%" alt="Ambiente VS Code">
+  <img src="images/estrutura_projeto.jpeg" width="48%" alt="Estrutura de Pastas">
+  <img src="images/ambiente_dev.jpeg" width="48%" alt="Ambiente VS Code">
 </p>
 
 ---
