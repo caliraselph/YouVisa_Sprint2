@@ -1,222 +1,120 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
+const API_BASE = "http://127.0.0.1:8000";
 
 function App() {
-  const [cases, setCases] = useState([]);
-  const [caseId, setCaseId] = useState('');
-  const [selectedCase, setSelectedCase] = useState(null);
-  const [userId, setUserId] = useState('demo-user');
-  const [email, setEmail] = useState('demo@youvisa.com');
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState('');
-  const [chatInput, setChatInput] = useState('');
-  const [chatHistory, setChatHistory] = useState(() => ([
-    { sender: 'bot', text: 'Olá! Envie um documento via formulário ou pergunte pelo status do seu caso.' }
-  ]));
-  const [chatSending, setChatSending] = useState(false);
+  const [caseId, setCaseId] = useState("VISA_1772314464");
+  const [caseData, setCaseData] = useState(null);
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatResponse, setChatResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const fetchCases = useCallback(async () => {
+  async function fetchStatus() {
+    setLoading(true);
+    setError("");
+    setCaseData(null);
     try {
-      const response = await fetch(`${API_BASE}/cases`);
-      const data = await response.json();
-      setCases(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.warn('Falha ao obter casos', err);
-    }
-  }, [API_BASE]);
-
-  useEffect(() => {
-    fetchCases();
-  }, [fetchCases]);
-
-  const handleSearch = useCallback(async () => {
-    if (!caseId) {
-      setSelectedCase(null);
-      return;
-    }
-    try {
-      const response = await fetch(`${API_BASE}/cases/${caseId}`);
-      if (!response.ok) {
-        throw new Error('Caso não encontrado');
+      const resp = await fetch(`${API_BASE}/cases/${caseId}`);
+      if (!resp.ok) {
+        throw new Error(`Erro ${resp.status}`);
       }
-      const data = await response.json();
-      setSelectedCase(data);
-    } catch (err) {
-      setSelectedCase({ error: err.message });
+      const data = await resp.json();
+      setCaseData(data);
+    } catch (e) {
+      setError(`Erro ao buscar caso: ${e.message}`);
+    } finally {
+      setLoading(false);
     }
-  }, [API_BASE, caseId]);
+  }
 
-  const handleUpload = useCallback(async (event) => {
-    event.preventDefault();
-    if (!file) {
-      setUploadMessage('Selecione um arquivo para enviar.');
-      return;
-    }
-    setUploading(true);
-    setUploadMessage('');
+  async function sendChat() {
+    if (!chatMessage.trim()) return;
+    setChatResponse("");
+    setError("");
     try {
-      const formData = new FormData();
-      formData.append('user_id', userId);
-      formData.append('email', email);
-      formData.append('file', file);
+      const form = new FormData();
+      form.append("case_id", caseId);
+      form.append("message", chatMessage);
 
-      const response = await fetch(`${API_BASE}/upload`, {
-        method: 'POST',
-        body: formData,
+      const resp = await fetch(`${API_BASE}/chat/`, {
+        method: "POST",
+        body: form,
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.detail || 'Falha no upload');
+      if (!resp.ok) {
+        throw new Error(`Erro ${resp.status}`);
       }
-      setUploadMessage(`Upload concluído! Status: ${data.status}`);
-      setCases((prev) => [data, ...prev]);
-      setFile(null);
-      event.target.reset();
-      fetchCases();
-    } catch (err) {
-      setUploadMessage(`Erro ao enviar: ${err.message}`);
-    } finally {
-      setUploading(false);
+      const data = await resp.json();
+      setChatResponse(data.mensagem || JSON.stringify(data));
+    } catch (e) {
+      setError(`Erro no chatbot: ${e.message}`);
     }
-  }, [API_BASE, email, file, fetchCases, userId]);
-
-  const handleSendChat = useCallback(async () => {
-    if (!chatInput.trim()) {
-      return;
-    }
-    const currentMessage = chatInput;
-    setChatInput('');
-    setChatHistory((prev) => [...prev, { sender: 'user', text: currentMessage }]);
-
-    setChatSending(true);
-    try {
-      const response = await fetch(`${API_BASE}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          message: currentMessage,
-          case_id: caseId || undefined,
-        }),
-      });
-      const data = await response.json();
-      const reply = data?.reply || 'Não consegui interpretar sua mensagem. Tente reformular.';
-      setChatHistory((prev) => [...prev, { sender: 'bot', text: reply }]);
-    } catch (err) {
-      setChatHistory((prev) => [...prev, {
-        sender: 'bot',
-        text: `Não foi possível responder agora: ${err.message}`,
-      }]);
-    } finally {
-      setChatSending(false);
-    }
-  }, [API_BASE, caseId, chatInput, userId]);
-
-  const uploadDisabled = useMemo(() => uploading, [uploading]);
+  }
 
   return (
-    <div className="app">
-      <header>
-        <h1>YOUVISA – Painel do Agente</h1>
-        <p>Gerencie uploads, acompanhe casos e interaja pelo assistente cognitivo.</p>
-      </header>
+    <div style={{ maxWidth: 800, margin: "20px auto", fontFamily: "sans-serif" }}>
+      <h1>YouVisa – Acompanhamento de Processo</h1>
 
-      <main>
-        <section className="panel">
-          <h2>Envio de Documento</h2>
-          <form onSubmit={handleUpload} className="upload-form">
-            <label>
-              Usuário
-              <input value={userId} onChange={(e) => setUserId(e.target.value)} required />
-            </label>
-            <label>
-              E-mail
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </label>
-            <label>
-              Arquivo
-              <input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
-            </label>
-            <button type="submit" disabled={uploadDisabled}>{uploading ? 'Enviando...' : 'Enviar documento'}</button>
-          </form>
-          {uploadMessage && <p className="status-message">{uploadMessage}</p>}
+      <section style={{ marginBottom: 20 }}>
+        <h2>1. Consultar status do caso</h2>
+        <input
+          value={caseId}
+          onChange={(e) => setCaseId(e.target.value)}
+          style={{ padding: 8, width: 260, marginRight: 8 }}
+          placeholder="VISA_123..."
+        />
+        <button onClick={fetchStatus} style={{ padding: "8px 16px" }}>
+          Ver status
+        </button>
 
-          <div className="cases">
-            <div className="cases-header">
-              <h2>Casos registrados</h2>
-              <button type="button" onClick={fetchCases}>Atualizar</button>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Email</th>
-                  <th>Tipo</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cases.length === 0 && (
-                  <tr>
-                    <td colSpan="4">Nenhum caso registrado ainda.</td>
-                  </tr>
-                )}
-                {cases.map((c) => (
-                  <tr key={c.id || c.case_id}>
-                    <td>{c.id || c.case_id}</td>
-                    <td>{c.email}</td>
-                    <td>{c.tipo_doc}</td>
-                    <td>{c.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {loading && <p>Carregando...</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-            <div className="case-search">
-              <h3>Consultar caso por ID</h3>
-              <input
-                value={caseId}
-                onChange={(e) => setCaseId(e.target.value)}
-                placeholder="ID do caso"
-              />
-              <button type="button" onClick={handleSearch}>Buscar</button>
-              {selectedCase && (
-                <pre>{JSON.stringify(selectedCase, null, 2)}</pre>
-              )}
-            </div>
+        {caseData && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: 16,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+            }}
+          >
+            <h3>Status atual: {caseData.status}</h3>
+            <p>Case ID: {caseData.case_id}</p>
+            {caseData.next_states && (
+              <p>Próximos estados possíveis: {caseData.next_states.join(", ")}</p>
+            )}
           </div>
-        </section>
+        )}
+      </section>
 
-        <section className="chat">
-          <h2>Assistente Cognitivo</h2>
-          <div className="chat-window">
-            {chatHistory.map((msg, index) => (
-              <div key={index} className={`chat-bubble ${msg.sender}`}>
-                <strong>{msg.sender === 'user' ? 'Você' : 'YOUAssistant'}</strong>
-                <p>{msg.text}</p>
-              </div>
-            ))}
+      <section>
+        <h2>2. Chatbot – Perguntar sobre o processo</h2>
+        <input
+          value={chatMessage}
+          onChange={(e) => setChatMessage(e.target.value)}
+          style={{ padding: 8, width: 260, marginRight: 8 }}
+          placeholder="Qual o status? Falta documento?"
+        />
+        <button onClick={sendChat} style={{ padding: "8px 16px" }}>
+          Perguntar
+        </button>
+
+        {chatResponse && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: 16,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              background: "#f7f7f7",
+            }}
+          >
+            <strong>Resposta do chatbot:</strong>
+            <p>{chatResponse}</p>
           </div>
-          <div className="chat-input">
-            <input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Escreva uma mensagem..."
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  handleSendChat();
-                }
-              }}
-            />
-            <button type="button" onClick={handleSendChat} disabled={chatSending}>
-              {chatSending ? 'Enviando...' : 'Enviar'}
-            </button>
-          </div>
-        </section>
-      </main>
+        )}
+      </section>
     </div>
   );
 }

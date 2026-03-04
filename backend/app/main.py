@@ -1,83 +1,105 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 import os
+import shutil
+from datetime import datetime
+from app.fsm import get_transicoes_validas
+from app.db_oracle import get_case, create_case, list_cases, save_file, update_case_status
+from app.fsm import validar_transicao
+from app.db_oracle import update_case_status
+from app.notifications import notify_status_change
+from app.chatbot import responder_status, generate_response, classify_intent
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.pipeline.nlp import classificar_documento
-from app.pipeline.vision import validar_documento
-from app.rpa.email import enviar_confirmacion
-from app.db.firestore import save_case, save_document, list_cases, get_case_by_id, update_case_status
+app = FastAPI(title="YouVisa API")
 
-app = FastAPI()
-
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploaded")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Monta uploads/ para servir archivos
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/health")
-def health():
-    return {"status": "ok"}
+async def health_check():
+    return {"status": "healthy", "project": "YouVisa"}
 
-@app.post("/upload")
-async def upload_document(
-    user_id: str = Form(...),
-    email: str = Form(...),
-    file: UploadFile = File(...)
-):
-    filename = file.filename
-    content = await file.read()
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...), case_id: str = Form(...), user_id: str = Form(...)):
+    """Upload archivo a caso existente"""
+    os.makedirs("uploads", exist_ok=True)
+    filepath = f"uploads/{file.filename}"
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    save_file(case_id, file.filename, filepath, len(await file.read()))
+    return {"filename": file.filename, "case_id": case_id, "path": filepath}
 
-    # 1. Guardar archivo localmente
-    save_path = os.path.join(UPLOAD_FOLDER, filename)
-    with open(save_path, "wb") as f:
-        f.write(content)
+@app.post("/cases/")
+async def create_new_case(user_id: str = Form(...), channel: str = Form(...), email: str = Form(...)):
+    """Crea nuevo caso de visa"""
+    case_id = create_case(user_id, channel, email)
+    return {"case_id": case_id, "status": "RECEBIDO", "next_states": get_transicoes_validas("RECEBIDO")}
 
-    # 2. Clasificar documento
-    tipo_doc = classificar_documento(filename)
-
-    # 3. Validar documento (simulado)
-    valido, respuesta = validar_documento(filename)
-    status = "Recebido"
-    if valido:
-        status = "Validado"
-    else:
-        status = "Erro: " + respuesta
-
-    # 4. Guardar en Firestore
-    case_id = save_case({
-        "user_id": user_id,
-        "email": email,
-        "status": status,
-        "tipo_doc": tipo_doc
-    })
-    save_document(case_id, filename)
-    update_case_status(case_id, status)
-
-    # 5. Automatización simulada (envío email)
-    enviar_confirmacion(email, tipo_doc, status)
-
-    return {
-        "case_id": case_id,
-        "filename": filename,
-        "tipo_doc": tipo_doc,
-        "status": status,
-        "msg": f"Documento {tipo_doc} - {status}. Notificación enviada."
-    }
-
-@app.get("/cases")
-def get_cases():
+@app.get("/cases/")
+async def list_all_cases():
     return list_cases()
 
+#@app.get("/cases/{case_id}")
+#async def get_case_by_id(case_id: str):
+#    case = get_case(case_id)
+#    if not case:
+#        raise HTTPException(status_code=404, detail="Caso não encontrado")
+#    case["next_states"] = get_transicoes_validas(case["status"])
+#    return case
+
 @app.get("/cases/{case_id}")
-def get_case(case_id: str):
-    case = get_case_by_id(case_id)
+async def get_case_by_id(case_id: str):
+    case = get_case(case_id)
     if not case:
-        return {"error": "Caso não encontrado"}
+        raise HTTPException(status_code=404, detail="Caso não encontrado")
+    case["next_states"] = get_transicoes_validas(case["status"])
     return case
 
+@app.post("/cases/{case_id}/status/")
+async def update_status(case_id: str, status: str = Form(...)):
+    """Actualiza status validando FSM"""
+    case = get_case(case_id)
+    if not case:
+        raise HTTPException(status_code=404, detail="Caso não encontrado")
+    
+    if not validar_transicao(case['status'], status):
+        raise HTTPException(status_code=400, detail=f"Transição inválida. Next válidos: {get_transicoes_validas(case['status'])}")
+    
+    update_case_status(case_id, status)
+    return {"case_id": case_id, "new_status": status, "message": "Atualizado!"}
 
-from fastapi.middleware.cors import CORSMiddleware
+# 1. NOTIFICATION (email)
+@app.post("/cases/{case_id}/notify/")
+async def notify(case_id: str):
+    case = get_case(case_id)  # TU función Oracle existente
+    if not case:
+        raise HTTPException(status_code=404, detail="Caso não encontrado")
+    
+    result = notify_status_change(
+        email_to=case['email'],
+        case_id=case_id,
+        new_status=case.get('status', 'RECEBIDO')
+    )
+    return result
+
+# 2. CHATBOT Status
+from app.chatbot import responder_status  # Crea abajo
+
+@app.post("/chat/status/")
+async def chat_status(case_id: str = Form(...)):
+    return responder_status(case_id)
+
+@app.post("/chat/")
+async def chat_full(case_id: str = Form(...), message: str = Form(...)):
+    intent = classify_intent(message)
+    return generate_response(case_id, intent, message)
+ 
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # solo para pruebas
+    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
